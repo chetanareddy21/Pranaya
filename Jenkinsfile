@@ -8,10 +8,22 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Test Connection') {
+
+        stage('Compile & Test') {
             steps {
-                echo 'Success! The webhook triggered this build automatically!'
-                sh 'docker --version'
+                echo 'Building Java project and running unit tests...'
+                // Using the Maven wrapper (mvnw) that comes with your Spring Boot/Java project
+                // On Linux/Docker, we run it using ./mvnw
+                sh 'chmod +x mvnw'
+                sh './mvnw clean test'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker container image...'
+                // This builds the docker image using the Dockerfile in your project root
+                sh 'docker build -t pranaya:latest .'
             }
         }
     }
