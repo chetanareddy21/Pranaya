@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Shopping Cart</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #fcf8f2; padding: 40px; margin: 0; }
+        .cart-container { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .cart-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 15px 0; }
+        .cart-item img { width: 80px; height: 100px; object-fit: cover; }
+        .total-panel { margin-top: 25px; text-align: right; font-size: 16px; color: #555; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+        .btn { display: inline-block; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 4px; }
+        .btn-checkout { background-color: #800020; color: white; border: none; cursor: pointer; }
+        .btn-checkout:disabled { background-color: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="cart-container">
+    <h1>Your Shopping Bag</h1>
+
+    <div style="display:none;" id="selected-seats-list">None</div>
+
+    <div>
+        <div class="cart-item item-row" th:each="item : ${cartItems}"
+             th:data-id="${item.product.folderName}"
+             th:data-price="${item.product.price}"
+             th:data-qty="${item.quantity}">
+
+            <img th:src="@{'/uploads/' + ${item.product.folderName} + '/' + ${item.product.coverImage}}" alt="Saree">
+            <div style="flex-grow: 1; margin-left: 20px;">
+                <div style="font-weight:bold;" th:text="${item.product.folderName}">Product Name</div>
+                <div style="font-size:14px; color:#666;" th:text="'Qty: ' + ${item.quantity}">Qty</div>
+            </div>
+            <div style="font-weight: bold;" th:text="'₹' + ${item.product.price * item.quantity}">Price</div>
+        </div>
+
+        <div class="total-panel">
+            <div>Order Amount: ₹<span id="order-amount">0.00</span></div>
+            <div>Booking Charge: ₹<span id="booking-charge">0.00</span></div>
+            <div>IGST (18%): ₹<span id="igst">0.00</span></div>
+            <hr style="width: 200px; margin: 5px 0;">
+            <div style="font-size: 22px; font-weight: bold; color: #800020;">
+                Total Price: ₹<span id="total-price">0.00</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+            <a href="/" class="btn" style="background:#f5f5f5; color:#333;">Continue Shopping</a>
+            <button id="book-btn" class="btn btn-checkout">Proceed to Checkout</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // This function automatically runs as soon as the page loads
+    document.addEventListener("DOMContentLoaded", function() {
+        updateSummaryPanel();
+    });
+
+    function updateSummaryPanel() {
+        const listSpan = document.getElementById('selected-seats-list');
+        const orderAmountSpan = document.getElementById('order-amount');
+        const bookingChargeSpan = document.getElementById('booking-charge');
+        const igstSpan = document.getElementById('igst');
+        const totalSpan = document.getElementById('total-price');
+        const bookBtn = document.getElementById('book-btn');
+
+        // Gather all item rows from the Thymeleaf loop
+        const itemRows = document.querySelectorAll('.item-row');
+
+        // 1. Calculate 'selectedSeats' equivalent (total item quantity)
+        let seatcount = 0;
+        let totalCost = 0;
+        let itemNames = [];
+
+        itemRows.forEach(row => {
+            const price = parseFloat(row.getAttribute('data-price'));
+            const qty = parseInt(row.getAttribute('data-qty'));
+            const id = row.getAttribute('data-id');
+
+            seatcount += qty;
+            totalCost += (price * qty);
+            itemNames.push(id);
+        });
+
+        // 2. Run your exact formulas
+        const bookingCharge = seatcount * 25;
+        const igst = bookingCharge * 0.18 * seatcount;
+
+        // 3. Update the UI panels exactly like your seat-booking logic
+        if (seatcount === 0) {
+            listSpan.innerText = "None";
+            orderAmountSpan.innerText = "0.00";
+            bookingChargeSpan.innerText = "0.00";
+            igstSpan.innerText = "0.00";
+            totalSpan.innerText = "0.00";
+            bookBtn.disabled = true;
+        }
+        else {
+            listSpan.innerText = itemNames.join(', ');
+            orderAmountSpan.innerText = totalCost.toFixed(2);
+            bookingChargeSpan.innerText = bookingCharge.toFixed(2);
+            igstSpan.innerText = igst.toFixed(2);
+
+            const grandTotal = totalCost + bookingCharge + igst;
+            totalSpan.innerText = grandTotal.toFixed(2);
+            bookBtn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>

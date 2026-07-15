@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pranaya Silks Gallery</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #fcf8f2;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* --- HERO & CAROUSEL SECTION --- */
+        .hero-carousel-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background-color: #000;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            pointer-events: none;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .carousel-slide img,
+        .carousel-slide video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- INDICATOR DOTS --- */
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .carousel-indicators .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-indicators .dot.active {
+            background-color: #ffffff;
+            transform: scale(1.2);
+        }
+
+        /* --- PLAY/PAUSE BUTTON (shown only over video slides) --- */
+        .video-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background-color: rgba(0, 0, 0, 0.55);
+            color: #ffffff;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .video-toggle-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+            transform: scale(1.08);
+        }
+
+        .video-toggle-btn[hidden] {
+            display: none; /* the [hidden] attribute hides it; this is just belt-and-braces */
+        }
+
+        /* --- CATALOG CONTENT SECTION --- */
+        .catalog-section {
+            padding: 60px 40px;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #800020;
+            margin-bottom: 40px;
+            font-weight: normal;
+            font-size: 32px;
+            letter-spacing: 1px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .image-wrapper {
+            width: 100%;
+            height: 320px;
+            overflow: hidden;
+            background: #eee;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-details {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .card-title {
+            font-size: 16px;
+            margin: 0 0 8px 0;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .card-price {
+            color: #800020;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero-carousel-container">
+    <div class="carousel-slide active"><img th:src="@{/images/s1.jpg}" alt="Background 1"></div>
+    <div class="carousel-slide"><video th:src="@{/images/hero-video-1.mp4}" loop muted playsinline></video></div>
+    <div class="carousel-slide"><img th:src="@{/images/s2.jpg}" alt="Background 2"></div>
+    <div class="carousel-slide"><video th:src="@{/images/hero-video-2.mp4}" loop muted playsinline></video></div>
+
+    <div class="carousel-indicators" id="carouselIndicators"></div>
+
+    <!-- Play/Pause button: hidden by default, shown only when the active slide is a video -->
+    <button id="videoToggleBtn" class="video-toggle-btn" type="button" aria-label="Play or pause video" hidden>⏸</button>
+
+</div>
+
+<div class="catalog-section" id="catalog">
+    <h2 class="section-title">Our Collections</h2>
+    <div class="gallery-grid">
+        <a th:each="prod : ${products}" th:href="@{/product(name=${prod.folderName})}" class="product-card">
+            <div class="image-wrapper">
+                <img th:src="${prod.coverImage}" alt="Saree Image">
+            </div>
+            <div class="card-details">
+                <h3 class="card-title" th:text="${prod.folderName}">Saree Name</h3>
+                <div class="card-price" th:text="'₹' + ${#numbers.formatDecimal(prod.price, 0, 'COMMA', 2, 'POINT')}">₹0.00</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<script>
+    const slides = document.querySelectorAll('.carousel-slide');
+    const container = document.getElementById('carouselIndicators');
+    const videoToggleBtn = document.getElementById('videoToggleBtn');
+    let currentIndex = 0;
+    let slideInterval;
+
+    // 1. Setup dot indicators
+    slides.forEach((_, i) => {
+        const dot = document.createElement('span');
+        dot.className = `dot ${i === 0 ? 'active' : ''}`;
+        dot.onclick = () => changeSlide(i);
+        container.appendChild(dot);
+    });
+    const dots = document.querySelectorAll('.dot');
+    const totalSlides = slides.length; // helper for the modulo math
+
+    // 2. Main Slide Change Logic
+    function changeSlide(nextIndex) {
+        // Handle media play/pause state for current and next slide
+        const currentVideo = slides[currentIndex].querySelector('video');
+        if (currentVideo) currentVideo.pause();
+
+        slides[currentIndex].classList.remove('active');
+        dots[currentIndex].classList.remove('active');
+
+        // Loop wrapper index cleanly
+        currentIndex = (nextIndex + totalSlides) % totalSlides;
+
+        slides[currentIndex].classList.add('active');
+        dots[currentIndex].classList.add('active');
+
+        const nextVideo = slides[currentIndex].querySelector('video');
+        if (nextVideo) {
+            nextVideo.currentTime = 0;
+            videoToggleBtn.hidden = false;          // show the play/pause button
+            updateToggleIcon(nextVideo);
+            nextVideo.play().catch(() => {});        // catch silent browser blocking blocks
+        } else {
+            videoToggleBtn.hidden = true;            // hide the button on image slides
+        }
+
+        resetTimer();
+    }
+
+    // 3. Simple timing loop (runs every 5 seconds uniformly)
+    function resetTimer() {
+        clearInterval(slideInterval);
+        slideInterval = setInterval(() => changeSlide(currentIndex + 1), 5000);
+    }
+
+    // 4. Shared toggle: called by both clicking the video and clicking the button.
+    //    Pauses/resumes the video and freezes/resumes the carousel rotation
+    //    so the video isn't yanked away mid-watch.
+    function toggleActiveVideo() {
+        const video = slides[currentIndex].querySelector('video');
+        if (!video) return;
+
+        if (video.paused) {
+            video.play().catch(() => {});
+            updateToggleIcon(video);
+            resetTimer();            // resume the rotation timer
+        } else {
+            video.pause();
+            updateToggleIcon(video);
+            clearInterval(slideInterval); // hold the carousel on this slide
+        }
+    }
+
+    // 5. Keep the button icon in sync with the video's actual play/pause state.
+    //    We also listen for the browser's own pause events (e.g. video ended,
+    //    autoplay blocked and it never started) so the icon never lies.
+    function updateToggleIcon(video) {
+        videoToggleBtn.textContent = video.paused ? '▶' : '⏸';
+        videoToggleBtn.setAttribute('aria-label', video.paused ? 'Play video' : 'Pause video');
+    }
+
+    // Wire the play/pause button to the same toggle function
+    videoToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();   // don't let the click bubble to the slide/video underneath
+        toggleActiveVideo();
+    });
+
+    // Click on a video also toggles play/pause (existing behavior, now via shared fn)
+    slides.forEach((slide, index) => {
+        const video = slide.querySelector('video');
+        if (!video) return;
+
+        video.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (index !== currentIndex) return; // only act on the visible slide
+            toggleActiveVideo();
+        });
+
+        // Keep the button icon honest if the browser pauses the video for any other reason
+        video.addEventListener('pause', () => updateToggleIcon(video));
+        video.addEventListener('play',  () => updateToggleIcon(video));
+    });
+
+    // Start
+    resetTimer();
+
+    // Play initial video if first slide happens to be a video, and reveal the button
+    const initialVideo = slides[0].querySelector('video');
+    if (initialVideo) {
+        videoToggleBtn.hidden = false;
+        updateToggleIcon(initialVideo);
+        initialVideo.play().catch(() => {});
+    }
+</script>
+
+</body>
+</html>

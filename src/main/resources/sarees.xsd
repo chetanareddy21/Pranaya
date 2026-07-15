@@ -1,0 +1,30 @@
+<!--<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"-->
+<!--           xmlns:tns="http://com.ecom.pranaya/soap"-->
+<!--           targetNamespace="http://com.ecom.pranaya/soap"-->
+<!--           elementFormDefault="qualified">-->
+
+<!--    <xs:element name="getProductDetailsRequest">-->
+<!--        <xs:complexType>-->
+<!--            <xs:sequence>-->
+<!--                <xs:element name="name" type="xs:string"/>-->
+<!--            </xs:sequence>-->
+<!--        </xs:complexType>-->
+<!--    </xs:element>-->
+
+<!--    <xs:element name="getProductDetailsResponse">-->
+<!--        <xs:complexType>-->
+<!--            <xs:sequence>-->
+<!--                <xs:element name="folderName" type="xs:string"/>-->
+<!--                <xs:element name="productCode" type="xs:string"/>-->
+<!--                <xs:element name="description" type="xs:string"/>-->
+<!--                <xs:element name="price" type="xs:double"/>-->
+<!--                <xs:element name="stock" type="xs:int"/>-->
+<!--                <xs:element name="vendor" type="xs:string"/>-->
+<!--                <xs:element name="productType" type="xs:string"/>-->
+<!--                <xs:element name="coverImage" type="xs:string"/>-->
+<!--                <xs:element name="allImages" type="xs:string" maxOccurs="unbounded"/>-->
+<!--            </xs:sequence>-->
+<!--        </xs:complexType>-->
+<!--    </xs:element>-->
+
+<!--</xs:schema>-->
